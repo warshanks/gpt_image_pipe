@@ -17,14 +17,11 @@
 This component is designed to run within the **Open WebUI** ecosystem as a **Pipe**.
 
 1.  Ensure you have **Open WebUI** installed and running.
-2.  Navigate to the **Functions** or **Pipes** section in your Open WebUI administration panel.
-3.  Create a new Pipe.
+2.  Navigate to the **Functions** section in your Open WebUI administration panel.
+3.  Create a new function.
 4.  Paste the contents of `gpt_image_pipe.py` into the code editor.
-5.  Install the required Python dependency in your environment if not already present:
-    ```bash
-    pip install openai
-    ```
-6.  Save and activate the Pipe.
+5.  Restart Open WebUI for the dependencies to install.
+6.  Save and activate the function.
 
 ## ⚙️ Configuration (Valves)
 
