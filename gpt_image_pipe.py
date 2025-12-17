@@ -149,7 +149,8 @@ class Pipe:
         quality: str,
     ) -> AsyncGenerator[str, None]:
         """Handles text-to-image generation."""
-        await self.emit_status(f"🖌️ Generating images with {model}...")
+        status_msg = f"Generating image with {model}..." if n == 1 else f"Generating images with {model}..."
+        await self.emit_status(status_msg)
 
         keys = [k.strip() for k in self.valves.OPENAI_API_KEYS.split(",") if k.strip()]
         if not keys:
@@ -205,7 +206,8 @@ class Pipe:
         quality: str,
     ) -> AsyncGenerator[str, None]:
         """Handles image-to-image editing."""
-        await self.emit_status(f"✂️ Editing images with {model}...")
+        status_msg = f"Editing image with {model}..." if n == 1 else f"Editing images with {model}..."
+        await self.emit_status(status_msg)
 
         keys = [k.strip() for k in self.valves.OPENAI_API_KEYS.split(",") if k.strip()]
         if not keys:
