@@ -13,7 +13,7 @@ import random
 import base64
 import asyncio
 import re
-from typing import List, AsyncGenerator, Callable, Awaitable, Tuple, Optional, Dict, Any
+from typing import List, AsyncGenerator, Callable, Awaitable, Tuple, Optional, Any, Literal
 from pydantic import BaseModel, Field
 from openai import OpenAI
 
@@ -32,17 +32,17 @@ class Pipe:
         IMAGE_NUM: int = Field(
             default=1, description="Number of output images to generate (1-10) (default: 1)"
         )
-        IMAGE_SIZE: str = Field(
+        IMAGE_SIZE: Literal["1024x1024", "1536x1024", "1024x1536", "auto"] = Field(
             default="auto",
             description="Image size: 1024x1024, 1536x1024, 1024x1536, auto (default)",
         )
-        IMAGE_QUALITY: str = Field(
+        IMAGE_QUALITY: Literal["high", "medium", "low", "auto"] = Field(
             default="auto", description="Image quality: high, medium, low, auto (default)"
         )
-        MODERATION: str = Field(
+        MODERATION: Literal["auto", "low"] = Field(
             default="auto", description="Moderation strictness: auto (default) or low"
         )
-        INPUT_FIDELITY: str = Field(
+        INPUT_FIDELITY: Literal["high", "low"] = Field(
             default="low",
             description="[gpt-image-1 only] Effort to match source style/features: high, low (default)",
         )
