@@ -16,6 +16,7 @@ import re
 from typing import List, AsyncGenerator, Callable, Awaitable, Tuple, Optional, Any, Literal
 from pydantic import BaseModel, Field
 from openai import OpenAI
+import time
 
 
 class Pipe:
@@ -149,8 +150,12 @@ class Pipe:
         quality: str,
     ) -> AsyncGenerator[str, None]:
         """Handles text-to-image generation."""
-        status_msg = f"Generating image with {model}..." if n == 1 else f"Generating images with {model}..."
+        # Get friendly model name
+        model_name = next((m["name"] for m in await self.pipes() if m["id"] == model), model)
+        status_msg = f"Generating image with {model_name}..." if n == 1 else f"Generating images with {model_name}..."
         await self.emit_status(status_msg)
+
+        start_time = time.time()
 
         keys = [k.strip() for k in self.valves.OPENAI_API_KEYS.split(",") if k.strip()]
         if not keys:
@@ -190,7 +195,9 @@ class Pipe:
                 else:
                     yield f"Error: No image data returned for image {i}\n"
 
-            await self.emit_status("🎉 Image generation successful", done=True)
+            elapsed_time = time.time() - start_time
+            time_str = f"{elapsed_time / 60:.1f} minutes" if elapsed_time >= 60 else f"{elapsed_time:.1f} seconds"
+            await self.emit_status(f"Image generated in {time_str}", done=True)
 
         except Exception as e:
             yield f"Error during image generation: {e}"
@@ -206,8 +213,12 @@ class Pipe:
         quality: str,
     ) -> AsyncGenerator[str, None]:
         """Handles image-to-image editing."""
-        status_msg = f"Editing image with {model}..." if n == 1 else f"Editing images with {model}..."
+        # Get friendly model name
+        model_name = next((m["name"] for m in await self.pipes() if m["id"] == model), model)
+        status_msg = f"Editing image with {model_name}..." if n == 1 else f"Editing images with {model_name}..."
         await self.emit_status(status_msg)
+
+        start_time = time.time()
 
         keys = [k.strip() for k in self.valves.OPENAI_API_KEYS.split(",") if k.strip()]
         if not keys:
@@ -276,7 +287,9 @@ class Pipe:
                 else:
                     yield f"Error: No image data returned for image {i}\n"
 
-            await self.emit_status("🎉 Image edit successful", done=True)
+            elapsed_time = time.time() - start_time
+            time_str = f"{elapsed_time / 60:.1f} minutes" if elapsed_time >= 60 else f"{elapsed_time:.1f} seconds"
+            await self.emit_status(f"Image generated in {time_str}", done=True)
 
         except Exception as e:
             yield f"Error during image edit: {e}"
