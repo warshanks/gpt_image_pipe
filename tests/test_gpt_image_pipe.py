@@ -517,16 +517,39 @@ def test_concurrent_chats_do_not_share_an_emitter():
     assert not hasattr(pipe, "emitter")
 
 
-def test_pipes_listing():
-    listed = gip.Pipe().pipes()
+def test_pipes_listing_defaults_to_two_models():
     # A sync pipes() is understood by every Open WebUI version.
     assert not inspect.iscoroutinefunction(gip.Pipe.pipes)
-    assert [m["id"] for m in listed] == [
-        "gpt-image-2",
-        "gpt-image-1.5",
-        "gpt-image-1",
-        "gpt-image-1-mini",
-    ]
+    listed = gip.Pipe().pipes()
+    assert [m["id"] for m in listed] == ["gpt-image-2", "gpt-image-1-mini"]
+    assert [m["name"] for m in listed] == ["GPT Image 2", "GPT Image 1 Mini"]
+
+
+def test_enabled_models_valve_controls_the_listing():
+    pipe = new_pipe(ENABLED_MODELS="gpt-image-1.5, gpt-image-2")
+    # Order and membership both follow the valve.
+    assert [m["id"] for m in pipe.pipes()] == ["gpt-image-1.5", "gpt-image-2"]
+
+    pipe = new_pipe(ENABLED_MODELS="gpt-image-1")
+    assert [m["id"] for m in pipe.pipes()] == ["gpt-image-1"]
+
+    # Duplicates and unknown ids are dropped.
+    pipe = new_pipe(ENABLED_MODELS="gpt-image-2,gpt-image-2,dall-e-3")
+    assert [m["id"] for m in pipe.pipes()] == ["gpt-image-2"]
+
+
+def test_empty_enabled_models_falls_back_instead_of_hiding_the_pipe():
+    for value in ("", "   ", "nonsense,also-nonsense"):
+        pipe = new_pipe(ENABLED_MODELS=value)
+        assert [m["id"] for m in pipe.pipes()] == ["gpt-image-2", "gpt-image-1-mini"], value
+
+
+def test_hidden_models_are_still_routable():
+    """A chat pinned to a de-listed model must keep working, not silently switch."""
+    install_fake()
+    pipe = new_pipe(ENABLED_MODELS="gpt-image-2")
+    run(pipe, {"model": "f.gpt-image-1.5", "messages": [user_msg("hi")]})
+    assert CALLS[0][1]["model"] == "gpt-image-1.5"
 
 
 if __name__ == "__main__":

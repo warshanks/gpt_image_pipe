@@ -58,6 +58,10 @@ MODELS: Tuple[ModelSpec, ...] = (
 MODELS_BY_ID: Dict[str, ModelSpec] = {spec.id: spec for spec in MODELS}
 DEFAULT_MODEL: ModelSpec = MODELS[0]
 
+# Shown in Open WebUI's model list unless the ENABLED_MODELS valve says otherwise.
+# The rest stay routable so chats pinned to a hidden model keep working.
+DEFAULT_ENABLED_MODELS: Tuple[str, ...] = ("gpt-image-2", "gpt-image-1-mini")
+
 # Sizes accepted by every GPT Image model prior to gpt-image-2.
 FIXED_SIZES: Tuple[str, ...] = ("1024x1024", "1536x1024", "1024x1536")
 
@@ -219,6 +223,13 @@ class Pipe:
             default="",
             description="Optional base URL override for OpenAI-compatible endpoints",
         )
+        ENABLED_MODELS: str = Field(
+            default=",".join(DEFAULT_ENABLED_MODELS),
+            description=(
+                "Comma-separated model ids to show in the model list, in order. "
+                "Available: " + ", ".join(spec.id for spec in MODELS)
+            ),
+        )
         IMAGE_NUM: int = Field(
             default=1, description="Number of output images to generate (1-10) (default: 1)"
         )
@@ -291,8 +302,16 @@ class Pipe:
         self.valves = self.Valves()
 
     def pipes(self) -> List[dict]:
-        """Returns the list of available models."""
-        return [{"id": spec.id, "name": spec.name} for spec in MODELS]
+        """Returns the models to surface in Open WebUI's model list."""
+        enabled: List[ModelSpec] = []
+        for raw in (self.valves.ENABLED_MODELS or "").split(","):
+            spec = MODELS_BY_ID.get(raw.strip())
+            if spec and spec not in enabled:
+                enabled.append(spec)
+        # An empty or entirely unrecognised list would hide the pipe altogether.
+        if not enabled:
+            enabled = [MODELS_BY_ID[model_id] for model_id in DEFAULT_ENABLED_MODELS]
+        return [{"id": spec.id, "name": spec.name} for spec in enabled]
 
     # ------------------------------------------------------------------
     # Conversation parsing

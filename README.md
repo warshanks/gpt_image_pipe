@@ -7,7 +7,7 @@
 
 ## ✨ Features
 
-- **Multi-Model Support**: `gpt-image-2`, `gpt-image-1.5`, `gpt-image-1` and `gpt-image-1-mini`, with per-model capability handling.
+- **Multi-Model Support**: `gpt-image-2` and `gpt-image-1-mini` out of the box, with `gpt-image-1.5` and `gpt-image-1` available via a valve. Per-model capability differences are handled for you.
 - **Conversational Generation**: Generate images based on your chat context.
 - **Image Editing**: Seamlessly edit images by uploading them or referencing generated ones in the chat.
 - **High-Resolution Output**: `gpt-image-2` accepts arbitrary resolutions up to 4K, validated before the request is sent.
@@ -39,6 +39,7 @@ You can configure the behavior of the pipe using "Valves" in the Open WebUI inte
 | :--- | :--- | :--- |
 | `OPENAI_API_KEYS` | **Required**. Your OpenAI API Key(s). Supports multiple comma-separated keys for load balancing. | `""` |
 | `OPENAI_API_BASE_URL` | Optional base URL override for OpenAI-compatible endpoints. | `""` |
+| `ENABLED_MODELS` | Comma-separated model ids to show in the model dropdown, in order. See [models](#-models). | `gpt-image-2,gpt-image-1-mini` |
 | `IMAGE_NUM` | Number of images to generate per request (1-10). | `1` |
 | `IMAGE_SIZE` | Output dimensions, or `custom` to use `CUSTOM_IMAGE_SIZE`. See [sizes](#-sizes) below. | `auto` |
 | `CUSTOM_IMAGE_SIZE` | *(`gpt-image-2`)* `WIDTHxHEIGHT` used when `IMAGE_SIZE` is `custom`. | `""` |
@@ -70,7 +71,19 @@ The `IMAGE_SIZE` dropdown offers `1024x1024`, `1536x1024`, `1024x1536`, `2048x20
 model, the pipe falls back to `auto` and says so in the status line instead of
 failing the request.
 
-### 🧬 Model differences
+### 🧬 Models
+
+Only `gpt-image-2` and `gpt-image-1-mini` appear in the model dropdown by
+default — the flagship and the cheap one. Set `ENABLED_MODELS` to surface the
+others, for example:
+
+```
+gpt-image-2,gpt-image-1.5,gpt-image-1,gpt-image-1-mini
+```
+
+The order you list them in is the order they appear. De-listing a model only
+hides it from the dropdown; chats already pinned to it keep working rather than
+silently switching models.
 
 | | `gpt-image-2` | `gpt-image-1.5` / `gpt-image-1` / `gpt-image-1-mini` |
 | :--- | :--- | :--- |
